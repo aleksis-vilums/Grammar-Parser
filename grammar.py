@@ -1,4 +1,4 @@
-file_path = "assignlist.cfg"
+file_path = "lga_test.cfg"
 
 try: 
     with open(file_path, 'r', encoding='utf-8') as file:
