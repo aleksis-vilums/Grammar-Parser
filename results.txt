@@ -1,0 +1,14 @@
+First Set Test:
+First(S) = {'#'}
+First(Rules) = {'nonterm', 'alt'}
+First(Rule) = {'nonterm', 'alt'}
+First(LHS) = {'nonterm', 'alt'}
+First(RHS) = {'term', 'nonterm', 'lambdasymbol'}
+First(Symbol) = {'term', 'nonterm'}
+Follow Set Test
+Follow(S) = {'rule...'}
+Follow(Rules) = {'$', 'nonterm', 'alt'}
+Follow(Rule) = {'$', 'nonterm', 'alt'}
+Follow(LHS) = {'term', 'nonterm', 'lambdasymbol'}
+Follow(RHS) = {'$', 'dollar', 'alt', 'term', 'nonterm'}
+Follow(Symbol) = {'$', 'dollar', 'alt', 'term', 'nonterm'}
