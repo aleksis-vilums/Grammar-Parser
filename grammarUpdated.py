@@ -175,7 +175,7 @@ def create_ll_table(productions, terminals):
     production_number = 1
     
     for i, non_terminal in enumerate(non_terminals):
-        for j, production in enumerate(productions[non_terminal]):
+        for production in productions[non_terminal]:
             predictionSet = predictSet(non_terminal, production, productions)
             for val in predictionSet:
                 if val == "$":
@@ -240,7 +240,6 @@ if __name__ == "__main__":
     #    print(f"Follow({key}) = {follow}")
 
     # Create LL Table
-    print(productions)
     ll_table = create_ll_table(productions, terminal)
     print(f"  {'|'.join(terminal)}")
     for i, key in enumerate(productions):
