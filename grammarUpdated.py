@@ -168,6 +168,22 @@ def isLLOne(productions):
             otherPredictSets.append(predSet)
     return True
 
+def create_ll_table(productions, terminals):
+    ll_table = []
+
+    for i, key in enumerate(productions):
+        for j, production in enumerate(productions[key]):
+             row = ["∅"] * len(terminals)
+             predictionSet = predictSet(key, production, productions)
+             for val in predictionSet:
+                 if val == "$":
+                     continue
+                 index = terminals.index(val)
+                 row[index] = j + 1
+             ll_table.append(row) 
+    
+    return ll_table
+
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         file_path = sys.argv[1]
@@ -199,13 +215,13 @@ if __name__ == "__main__":
     #print(f"\nGrammer Start Symbol or Goal: {startSymbol}")
 
     #Predict Set
-    print("Predict Set Test:")
-    for key in productions:
-        for production in productions[key]:
-            predictionSet = predictSet(key, production, productions)
-            print(f"Predict Set({key}): {predictionSet}")
+    # print("Predict Set Test:")
+    # for key in productions:
+    #     for production in productions[key]:
+    #         predictionSet = predictSet(key, production, productions)
+    #         print(f"Predict Set({key}): {predictionSet}")
 
-    print(f"{isLLOne(productions)}")
+    # print(f"{isLLOne(productions)}")
 
     # First Set Test
     #print("First Set Test:")
@@ -219,3 +235,11 @@ if __name__ == "__main__":
     #for key in productions:
     #    follow, _ = follow_set(key, productions, set())
     #    print(f"Follow({key}) = {follow}")
+
+    # Create LL Table
+    print(productions)
+    ll_table = create_ll_table(productions, terminal)
+    print(f"  {"|".join(terminal)}")
+    for i, key in enumerate(productions):
+        print(f"{key}|{"|".join(map(str, ll_table[i]))}")
+
