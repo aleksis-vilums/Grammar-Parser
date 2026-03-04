@@ -1,6 +1,8 @@
 import sys
 
 def derives_to_lambda(term, productions, T=set()):
+    if term == "lambda":
+        return True
     if term not in productions:
         return False
 
@@ -137,6 +139,35 @@ def parse_grammar(file_path):
         print(f"Error: {e}")
         return None, None, None
 
+def predictSet(key, production, productions):
+    predSet = set()
+    derivesLambda = False
+
+    for sym in production:
+        first_sym, _ = first_set(sym, [], productions, set())
+        predSet |= (first_sym - {'lambda'})
+        if not derives_to_lambda(sym, productions, set()):
+            derivesLambda = False
+            break
+        derivesLambda = True
+
+    if derivesLambda:
+        follow, _ = follow_set(key, productions, set())
+        predSet |= follow
+
+    return predSet
+
+def isLLOne(productions):
+    for key in productions:
+        otherPredictSets = []
+        for production in productions[key]:
+            predSet = predictSet(key, production, productions)
+            for otherPredictSet in otherPredictSets:
+                if otherPredictSet & predSet: #Intersection therefore, violation
+                    return False
+            otherPredictSets.append(predSet)
+    return True
+
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         file_path = sys.argv[1]
@@ -151,38 +182,40 @@ if __name__ == "__main__":
         exit(1)
 
     # Grammar Printing
-    # print(f"Grammer Non-Terminal\n{non_terminal}")
-    # print(f"Grammer Terminals\n{terminal}")
-    # print("\nGrammer Rules")
+    #print(f"Grammer Non-Terminal\n{non_terminal}")
+    #print(f"Grammer Terminals\n{terminal}")
+    #print("\nGrammer Rules")
 
     # #Printing + find start symbol
-    # i = 1
-    # startSymbol = None
-    # for key in productions:
-    #     for production in productions[key]:
-    #         if '$' in production:
-    #             startSymbol = key
-    #         print(f"({i}) {key} -> {production}")
-    #         i+=1
+    #i = 1
+    #startSymbol = None
+    #for key in productions:
+    #    for production in productions[key]:
+    #        if '$' in production:
+    #            startSymbol = key
+    #        print(f"({i}) {key} -> {production}")
+    #        i+=1
 
-    # print(f"\nGrammer Start Symbol or Goal: {startSymbol}")
+    #print(f"\nGrammer Start Symbol or Goal: {startSymbol}")
 
-    # Derives to lambda Test
-    # print("Derives to lambda test:")
-    # for key in productions:
-    #     for production in productions[key]:
-    #         if derives_to_lambda(production, productions):
-    #             print(f"{key} -> {production} derives to lambda")
+    #Predict Set
+    print("Predict Set Test:")
+    for key in productions:
+        for production in productions[key]:
+            predictionSet = predictSet(key, production, productions)
+            print(f"Predict Set({key}): {predictionSet}")
+
+    print(f"{isLLOne(productions)}")
 
     # First Set Test
-    print("First Set Test:")
-    for key in productions:
-        first, _ = first_set(key, [], productions, set())
-        print(f"First({key}) = {first}")
+    #print("First Set Test:")
+    #for key in productions:
+    #    first, _ = first_set(key, [], productions, set())
+    #    print(f"First({key}) = {first}")
 
     
     #Follow Set Test
-    print("Follow Set Test")
-    for key in productions:
-        follow, _ = follow_set(key, productions, set())
-        print(f"Follow({key}) = {follow}")
+    #print("Follow Set Test")
+    #for key in productions:
+    #    follow, _ = follow_set(key, productions, set())
+    #    print(f"Follow({key}) = {follow}")
