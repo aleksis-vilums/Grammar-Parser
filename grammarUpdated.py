@@ -169,18 +169,21 @@ def isLLOne(productions):
     return True
 
 def create_ll_table(productions, terminals):
-    ll_table = []
-
-    for i, key in enumerate(productions):
-        for j, production in enumerate(productions[key]):
-             row = ["∅"] * len(terminals)
-             predictionSet = predictSet(key, production, productions)
-             for val in predictionSet:
-                 if val == "$":
-                     continue
-                 index = terminals.index(val)
-                 row[index] = j + 1
-             ll_table.append(row) 
+    non_terminals = list(productions.keys())
+    ll_table = [["∅"] * len(terminals) for _ in range(len(non_terminals))]
+    
+    production_number = 1
+    
+    for i, non_terminal in enumerate(non_terminals):
+        for j, production in enumerate(productions[non_terminal]):
+            predictionSet = predictSet(non_terminal, production, productions)
+            for val in predictionSet:
+                if val == "$":
+                    continue
+                if val in terminals:
+                    index = terminals.index(val)
+                    ll_table[i][index] = production_number
+            production_number += 1
     
     return ll_table
 
@@ -239,7 +242,7 @@ if __name__ == "__main__":
     # Create LL Table
     print(productions)
     ll_table = create_ll_table(productions, terminal)
-    print(f"  {"|".join(terminal)}")
+    print(f"  {'|'.join(terminal)}")
     for i, key in enumerate(productions):
-        print(f"{key}|{"|".join(map(str, ll_table[i]))}")
+        print(f"{key}|{'|'.join(map(str, ll_table[i]))}")
 
