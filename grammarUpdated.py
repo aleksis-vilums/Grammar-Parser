@@ -170,31 +170,130 @@ def isLLOne(productions):
 
 def create_ll_table(productions, terminals):
     non_terminals = list(productions.keys())
-    ll_table = [["∅"] * len(terminals) for _ in range(len(non_terminals))]
+    # + 1 because we need to include $
+    ll_table = [["∅"] * (len(terminals) + 1) for _ in range(len(non_terminals))]
     
-    production_number = 1
+    production_number = 0 # Lists are 0 indexed so should really start from 0
     
     for i, non_terminal in enumerate(non_terminals):
         for production in productions[non_terminal]:
             predictionSet = predictSet(non_terminal, production, productions)
             for val in predictionSet:
-                if val == "$":
-                    continue
+                if val == "$": # I made $ index the very last (len terminals)
+                    index = len(terminals)
                 if val in terminals:
                     index = terminals.index(val)
-                    ll_table[i][index] = production_number
+                ll_table[i][index] = production_number
             production_number += 1
     
     return ll_table
 
+# I just created this node class so I could more easily figure out the parent by storing it
+class Node:
+    def __init__(self, parent):
+        self.parent = parent
+        self.children = []
+
+    def to_string(self):
+        s = "["
+        for c in self.children:
+            if isinstance(c, Node):
+                s += c.to_string() + ", "
+            elif isinstance(c, str):
+                s += c + ","
+            else:
+                s += ": ".join(c) + ", "
+        s += "]"
+        return s
+    
+    def to_lists(self):
+        l = []
+        for c in self.children:
+            if isinstance(c, Node):
+                l.append(c.to_lists())
+            elif isinstance(c, str):
+                l.append(c)
+            else:
+                l.append(": ".join(c))
+        return l
+
+def create_parse_tree(productions_map, terminals, start, parse_table, token_stream_filename):
+    current_node = Node(None)
+    k = [] # k is stack
+    k.append(start)
+
+    # map nonterminals to their order to figure out where in the parse table we should look
+    # More efficient to do it beforehand
+    # Also convert productions into a list instead of a map
+    nonterms_to_order = {}
+    productions_list = []
+    for i, non_terminal in enumerate(productions_map.keys()):
+        nonterms_to_order[non_terminal] = i
+        for p in productions_map[non_terminal]:
+            productions_list.append(p)
+
+    # probably a better way to do this but I'm being lazy: read all the lines into a list
+    lines = []
+    with open(token_stream_filename, 'r') as file:
+        for line in file:
+            if len(line) != 0:
+                lines.append(line.strip().split(" ")) # Split, because some lines might have srcValue
+    # Reverse the lines because I'm treating them like a stack later (pop + look at last element)
+    # and i need to read them in order
+    lines.reverse() 
+    # would probably be better to import python's deque
+
+    while len(k) != 0:
+        x = k.pop()
+        # If x is a nonterminal, apply a production
+        if x in productions_map.keys(): # Not efficient but whatever, I don't really care
+            if len(lines) == 0:
+                raise Exception(f"Can't parse: The token stream ran out of tokens before completing the derivation")
+            if lines[-1][0] == "$":
+                term_index = len(terminals)
+            else:
+                term_index = terminals.index(lines[-1][0]) # [0] because we are comparing to token not srcValue
+            prod_number = parse_table[nonterms_to_order[x]][term_index] 
+            if prod_number == "∅":
+                raise Exception(f"Can't parse: Nonterminal {x} doesn't have a production for {lines[-1][0]}") # Could have line number
+            k.append("MARKER") # should probably have more robust way to do this because MARKER could technically be a token
+            production = productions_list[prod_number]
+            for thingy in reversed(production): # append in reverse order
+                k.append(thingy)
+            n = Node(current_node) # create new node
+            current_node.children.append(n) # append as rightmost child
+            current_node = n # Then move down to this child
+        elif x != "MARKER": # x is terminal or lambda
+            if len(lines) == 0:
+                raise Exception(f"Can't parse: The token stream ran out of tokens before completing the derivation")
+            if x != "lambda": # x is terminal
+                if x != lines[-1][0]:
+                    raise Exception(f"Cant parse: Need to match the terminal on the stack, {x}, with {lines[-1][0]}")
+                # psuedo code says x = lines.pop() but I think it's supposed to say "add the terminal as the rhs child"
+                x = lines.pop()
+            current_node.children.append(x)
+        else: # x is MARKER
+            current_node = current_node.parent
+
+    return current_node.children[0] # current_node is root, only child is start
+
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
+    if len(sys.argv) > 2:
         file_path = sys.argv[1]
+        token_filename = sys.argv[2]
     else:
-        print("Please include a file path as an argument")
+        print("Please include two file paths as an argument (grammar definition and token stream)")
         exit(1)
     
     non_terminal, terminal, productions = parse_grammar(file_path)
+    # Find start symbol (need to start from the start symbol when parsing)
+    start_symbol = None
+    for key, nonterm_prods in productions.items():
+        if '$' in nonterm_prods[0]: # all productions for start should have $
+            start_symbol = key
+            break
+    if start_symbol is None:
+        raise Exception("Could not find start symbol")
 
     #If parsing failed, exit
     if non_terminal is None:
@@ -206,9 +305,9 @@ if __name__ == "__main__":
     #print("\nGrammer Rules")
 
     # #Printing + find start symbol
-    #i = 1
-    #startSymbol = None
-    #for key in productions:
+    # i = 0 # lists are 0 indexed in python so should start from 0
+    # startSymbol = None
+    # for key in productions:
     #    for production in productions[key]:
     #        if '$' in production:
     #            startSymbol = key
@@ -224,7 +323,8 @@ if __name__ == "__main__":
     #         predictionSet = predictSet(key, production, productions)
     #         print(f"Predict Set({key}): {predictionSet}")
 
-    # print(f"{isLLOne(productions)}")
+    if not isLLOne(productions):
+        raise Exception("The grammar isn't LL(1)")
 
     # First Set Test
     #print("First Set Test:")
@@ -241,7 +341,12 @@ if __name__ == "__main__":
 
     # Create LL Table
     ll_table = create_ll_table(productions, terminal)
-    print(f"  {'|'.join(terminal)}")
-    for i, key in enumerate(productions):
-        print(f"{key}|{'|'.join(map(str, ll_table[i]))}")
+
+    # print(f"  {'|'.join(terminal)}|$")
+    # for i, key in enumerate(productions):
+    #     print(f"{key}|{'|'.join(map(str, ll_table[i]))}")
+
+    print("Parse tree:")
+    parse_tree = create_parse_tree(productions, terminal, start_symbol, ll_table, token_filename)
+    print(parse_tree.to_string())
 
