@@ -1,0 +1,13 @@
+Predict Set(S -> ['z', '$']): {'z'}
+Predict Set(A -> ['B', 'C']): {'b'}
+Predict Set(A -> ['E', 'F', 'G', 'H']): {'g', 'c', 'e'}
+Predict Set(A -> ['H']): {'h'}
+Predict Set(B -> ['b']): {'b'}
+Predict Set(C -> ['lambda']): {'g', 'e'}
+Predict Set(C -> ['c']): {'c'}
+Predict Set(E -> ['lambda']): {'g', 'c', 'e'}
+Predict Set(E -> ['e']): {'e'}
+Predict Set(F -> ['C', 'E']): {'g', 'c', 'e'}
+Predict Set(G -> ['g']): {'g'}
+Predict Set(H -> ['lambda']): set()
+Predict Set(H -> ['h']): {'h'}

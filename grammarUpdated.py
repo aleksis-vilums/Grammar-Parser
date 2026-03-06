@@ -248,7 +248,7 @@ def create_parse_tree(productions_map, terminals, start, parse_table, token_stre
         # If x is a nonterminal, apply a production
         if x in productions_map.keys(): # Not efficient but whatever, I don't really care
             if len(lines) == 0:
-                raise Exception(f"Can't parse: The token stream ran out of tokens before completing the derivation")
+                raise Exception(f"Can't parse: The token stream ran out of tokens before completing the derivation. Current nonterminal: {x}")
             if lines[-1][0] == "$":
                 term_index = len(terminals)
             else:
@@ -264,13 +264,14 @@ def create_parse_tree(productions_map, terminals, start, parse_table, token_stre
             current_node.children.append(n) # append as rightmost child
             current_node = n # Then move down to this child
         elif x != "MARKER": # x is terminal or lambda
-            if len(lines) == 0:
-                raise Exception(f"Can't parse: The token stream ran out of tokens before completing the derivation")
             if x != "lambda": # x is terminal
-                if x != lines[-1][0]:
-                    raise Exception(f"Cant parse: Need to match the terminal on the stack, {x}, with {lines[-1][0]}")
-                # psuedo code says x = lines.pop() but I think it's supposed to say "add the terminal as the rhs child"
-                x = lines.pop()
+                if len(lines) == 0:
+                    if x != "$":
+                        raise Exception(f"Can't parse: The token stream ran out of tokens before completing the derivation. Current terminal: {x}")
+                else: 
+                    if x != lines[-1][0]:
+                        raise Exception(f"Cant parse: Need to match the terminal on the stack, {x}, with {lines[-1][0]}")
+                    x = lines.pop()
             current_node.children.append(x)
         else: # x is MARKER
             current_node = current_node.parent
@@ -316,12 +317,12 @@ if __name__ == "__main__":
 
     #print(f"\nGrammer Start Symbol or Goal: {startSymbol}")
 
-    #Predict Set
-    # print("Predict Set Test:")
-    # for key in productions:
-    #     for production in productions[key]:
-    #         predictionSet = predictSet(key, production, productions)
-    #         print(f"Predict Set({key}): {predictionSet}")
+    # Predict Set
+    print("Predict Set Test:")
+    for key in productions:
+        for production in productions[key]:
+            predictionSet = predictSet(key, production, productions)
+            print(f"Predict Set({key} -> {production}): {predictionSet}")
 
     if not isLLOne(productions):
         raise Exception("The grammar isn't LL(1)")
@@ -348,5 +349,5 @@ if __name__ == "__main__":
 
     print("Parse tree:")
     parse_tree = create_parse_tree(productions, terminal, start_symbol, ll_table, token_filename)
-    print(parse_tree.to_string())
+    print(parse_tree.to_lists())
 
