@@ -1,0 +1,89 @@
+commit 383ffcfae5f13d27dd88b751569faaaf9f2f505f
+Author: Mabel Reed <71273371+Hexrin@users.noreply.github.com>
+Date:   Fri Mar 6 09:26:24 2026 -0700
+
+    Made matching $ optional
+
+commit 3863d13a53a97704fd08141fda4984632d64a0c4
+Author: Mabel Reed <71273371+Hexrin@users.noreply.github.com>
+Date:   Thu Mar 5 19:23:07 2026 -0700
+
+    Parsing (slightly messily)
+
+commit 435962fb9f8b9e046ad050f627e005e5e9dca6a4
+Author: Tristen <ublius.developer@gmail.com>
+Date:   Wed Mar 4 15:28:57 2026 -0700
+
+    Remove uncessary prints
+
+commit 8b3bc67e6f443c0d8b5afffd1e252f859f83fe6c
+Author: Tristen <ublius.developer@gmail.com>
+Date:   Wed Mar 4 15:27:55 2026 -0700
+
+    Finish LL table
+
+commit 60ace4288a02cdb3da6d58075eacd1d0dfa89497
+Author: Ublius <ublius.developer@gmail.com>
+Date:   Wed Mar 4 10:59:43 2026 -0700
+
+    partialy working LL table
+
+commit 40b1b604d200f40593a986cf2ca3b2455e30df73
+Author: Ublius <ublius.developer@gmail.com>
+Date:   Wed Mar 4 09:30:40 2026 -0700
+
+    Add Ques 5 from LGA
+
+commit 15c377ed68f89ae64ad7fbfa931bc751db9c0d86
+Author: aleksis-vilums <aleksis.vilums@gmail.com>
+Date:   Wed Mar 4 03:13:11 2026 -0700
+
+    Predict Sets
+
+commit 21ab1ca9c630adb958dcfc96b66457f0e3554c6f
+Author: aleksis-vilums <aleksis.vilums@gmail.com>
+Date:   Wed Mar 4 03:12:55 2026 -0700
+
+    Predict Sets
+
+commit 0e26d86108c0a04a8a4742d795e027533d3af892
+Author: aleksis-vilums <aleksis.vilums@gmail.com>
+Date:   Mon Mar 2 09:25:05 2026 -0700
+
+    Better Folder Structure
+
+commit 806fb9a4e9f9cc6157a8f45dc573495beac9c492
+Author: aleksis-vilums <aleksis.vilums@gmail.com>
+Date:   Mon Mar 2 09:19:23 2026 -0700
+
+    Fix added
+
+commit e590d645572c81910368c0cc2791eb791b68bffa
+Author: aleksis-vilums <aleksis.vilums@gmail.com>
+Date:   Thu Feb 26 18:29:42 2026 -0700
+
+    Functions Added
+
+commit 8a8c21d2f158e18988bed99aa307d0ccef02d022
+Author: aleksis-vilums <aleksis.vilums@gmail.com>
+Date:   Wed Feb 25 10:20:41 2026 -0700
+
+    Remove Bad Test Case
+
+commit 1fc0f7afa27de061dcd3a346a5155971f6249503
+Author: aleksis-vilums <aleksis.vilums@gmail.com>
+Date:   Wed Feb 25 10:19:39 2026 -0700
+
+    Comments
+
+commit 49168d948a0958df923d0b6c4c1f4a451c1736c8
+Author: aleksis-vilums <aleksis.vilums@gmail.com>
+Date:   Wed Feb 25 09:45:40 2026 -0700
+
+    Typo fixed
+
+commit df38e450fe90e09417e8ab740732d3d8b3ba8439
+Author: aleksis-vilums <aleksis.vilums@gmail.com>
+Date:   Tue Feb 24 20:03:31 2026 -0700
+
+    Initial Commit
