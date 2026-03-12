@@ -190,8 +190,10 @@ def create_ll_table(productions, terminals):
 
 # I just created this node class so I could more easily figure out the parent by storing it
 class Node:
-    def __init__(self, parent):
+    def __init__(self, parent, symbol=None, production=None):
         self.parent = parent
+        self.symbol = symbol
+        self.production = production
         self.children = []
 
     def to_string(self):
@@ -260,7 +262,7 @@ def create_parse_tree(productions_map, terminals, start, parse_table, token_stre
             production = productions_list[prod_number]
             for thingy in reversed(production): # append in reverse order
                 k.append(thingy)
-            n = Node(current_node) # create new node
+            n = Node(current_node, symbol=x, production=production) # create new node
             current_node.children.append(n) # append as rightmost child
             current_node = n # Then move down to this child
         elif x != "MARKER": # x is terminal or lambda
@@ -274,9 +276,32 @@ def create_parse_tree(productions_map, terminals, start, parse_table, token_stre
                     x = lines.pop()
             current_node.children.append(x)
         else: # x is MARKER
+            run_sdt(current_node)
             current_node = current_node.parent
 
     return current_node.children[0] # current_node is root, only child is start
+
+def rotate_children(node):
+    if len(node.children) > 1:
+        first = node.children.pop(0)
+        node.children.append(first)
+
+def flatten_recursion(node):
+    if not isinstance(node, Node):
+        return
+
+    if len(node.children) < 2:
+        return
+
+    last_child = node.children[-1]
+
+    if isinstance(last_child, Node) and last_child.symbol == node.symbol:
+        node.children.pop()
+        node.children.extend(last_child.children)
+
+def run_sdt(node):
+    flatten_recursion(node)
+    rotate_children(node)
 
 if __name__ == "__main__":
     if len(sys.argv) > 2:
