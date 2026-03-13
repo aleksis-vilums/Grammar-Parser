@@ -217,7 +217,23 @@ class Node:
                 l.append(": ".join(c))
         return l
 
-def create_parse_tree(productions_map, terminals, start, parse_table, token_stream_filename):
+def sdt_flip_a(node):
+    #Simple swap of the first two nodes
+    temp = node.children[0]
+    node.children[0] = node.children[1]
+    node.children[1] = temp
+    pass
+
+def sdt_flatten_b(node):
+    #Remember the grammar I am testing this on is does not have a lambda base case in the recursive structure so I am not pruning lambda but rather combing all the chidren to the upmost node.
+    #B -> b B | d
+    right_B = node.children[1] #Get the right recursive B
+    node.children.pop() #Remove B
+    for child in right_B.children: #Bring the child node up to the top
+        node.children.append(child)
+    pass
+
+def create_parse_tree(productions_map, terminals, start, parse_table, token_stream_filename, sdt_procedures):
     current_node = Node(None)
     k = [] # k is stack
     k.append(start)
@@ -246,7 +262,7 @@ def create_parse_tree(productions_map, terminals, start, parse_table, token_stre
     while len(k) != 0:
         x = k.pop()
         # If x is a nonterminal, apply a production
-        if x in productions_map.keys(): # Not efficient but whatever, I don't really care
+        if not isinstance(x, tuple) and x in productions_map.keys(): # Not efficient but whatever, I don't really care, chec since it may be a tuple now
             if len(lines) == 0:
                 raise Exception(f"Can't parse: The token stream ran out of tokens before completing the derivation. Current nonterminal: {x}")
             if lines[-1][0] == "$":
@@ -256,14 +272,14 @@ def create_parse_tree(productions_map, terminals, start, parse_table, token_stre
             prod_number = parse_table[nonterms_to_order[x]][term_index] 
             if prod_number == "∅":
                 raise Exception(f"Can't parse: Nonterminal {x} doesn't have a production for {lines[-1][0]}") # Could have line number
-            k.append("MARKER") # should probably have more robust way to do this because MARKER could technically be a token
+            k.append(("MARKER", prod_number)) # should probably have more robust way to do this because MARKER could technically be a token, need to push production number to determine SDT procedures when MARKER is found.
             production = productions_list[prod_number]
             for thingy in reversed(production): # append in reverse order
                 k.append(thingy)
             n = Node(current_node) # create new node
             current_node.children.append(n) # append as rightmost child
             current_node = n # Then move down to this child
-        elif x != "MARKER": # x is terminal or lambda
+        elif not isinstance(x, tuple) and x != "MARKER": # x is terminal or lambda, since it may be a tuple now
             if x != "lambda": # x is terminal
                 if len(lines) == 0:
                     if x != "$":
@@ -274,9 +290,59 @@ def create_parse_tree(productions_map, terminals, start, parse_table, token_stre
                     x = lines.pop()
             current_node.children.append(x)
         else: # x is MARKER
+            _, prod_number = x
+            #Find prod_number in dict of SDT procedures and perform the appropriate sdt
+            if prod_number in sdt_procedures:
+                sdt_procedures[prod_number](current_node)
             current_node = current_node.parent
 
     return current_node.children[0] # current_node is root, only child is start
+
+def scan(file_path):
+    tokens = []
+    escape_map = {
+        '|': 'char |',
+        '*': 'char *',
+        '+': 'char +',
+        '.': 'char .',
+        '(': 'char (',
+        ')': 'char )',
+        '-': 'char -',
+        's': 'char x20',
+        'n': 'char x0a',
+        '\\': 'char \\',
+    }
+
+    with open(file_path, 'r') as f:
+        content = f.read()
+
+    i = 0
+    while i < len(content)-1:
+        c = content[i]
+        match c:
+            case '\\':
+                next_c = content[i+1]
+                tokens.append(escape_map[next_c])
+                i += 1
+            case '(':
+                tokens.append('open (')
+            case ')':
+                tokens.append('close )')
+            case '|':
+                tokens.append('pipe |')
+            case '*':
+                tokens.append('kleene *')
+            case '+':
+                tokens.append('plus +')
+            case '.':
+                tokens.append('dot .')
+            case '-':
+                tokens.append('dash -')
+            case _:
+                tokens.append(f'char {c}')
+        i += 1
+
+    return tokens
 
 if __name__ == "__main__":
     if len(sys.argv) > 2:
@@ -286,6 +352,10 @@ if __name__ == "__main__":
         print("Please include two file paths as an argument (grammar definition and token stream)")
         exit(1)
     
+    token = scan(sys.argv[3])
+    for t in token:
+        print(t)
+
     non_terminal, terminal, productions = parse_grammar(file_path)
     # Find start symbol (need to start from the start symbol when parsing)
     start_symbol = None
@@ -347,7 +417,12 @@ if __name__ == "__main__":
     # for i, key in enumerate(productions):
     #     print(f"{key}|{'|'.join(map(str, ll_table[i]))}")
 
+    sdt_procedures = {
+            3: sdt_flip_a,#Production Number I want to do a flip flop on
+            6: sdt_flatten_b #Production Number that is recursive in the language.tok.cfg. This is the production we want to do the sdt procedure on
+    }
+
     print("Parse tree:")
-    parse_tree = create_parse_tree(productions, terminal, start_symbol, ll_table, token_filename)
+    parse_tree = create_parse_tree(productions, terminal, start_symbol, ll_table, token_filename, sdt_procedures)
     print(parse_tree.to_lists())
 
